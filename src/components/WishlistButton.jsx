@@ -3,10 +3,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
+import { useWishlist } from '@/context/WishlistContext';
 
 export default function WishlistButton({ productId, className = '' }) {
   const { user, token } = useAuth();
   const { toast } = useToast();
+  const { refreshWishlist } = useWishlist();
   const router = useRouter();
   const [inWishlist, setInWishlist] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,6 +41,7 @@ export default function WishlistButton({ productId, className = '' }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to update wishlist');
       setInWishlist(data.added);
+      refreshWishlist();
       toast({ message: data.added ? 'Added to wishlist.' : 'Removed from wishlist.', type: 'success' });
     } catch (err) {
       toast({ message: err.message, type: 'error' });

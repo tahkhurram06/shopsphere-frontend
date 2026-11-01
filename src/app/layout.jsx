@@ -3,14 +3,13 @@ import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/ToastContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { CartProvider } from '@/context/CartContext';
+import { WishlistProvider } from '@/context/WishlistContext';
 
 export const metadata = {
   title: 'ShopSphere',
   description: 'ShopSphere e-commerce app',
 };
 
-// Runs before React hydrates so the page doesn't flash light-then-dark
-// on reload when the user has dark mode saved.
 const themeInitScript = `
 (function () {
   try {
@@ -37,7 +36,9 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>
-              <CartProvider>{children}</CartProvider>
+              <CartProvider>
+                <WishlistProvider>{children}</WishlistProvider>
+              </CartProvider>
             </ToastProvider>
           </AuthProvider>
         </ThemeProvider>
