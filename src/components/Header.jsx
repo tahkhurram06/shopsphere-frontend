@@ -2,12 +2,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import Link from "next/link";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Header() {
   const { user, logout, loading } = useAuth();
   const { count } = useCart();
+  const { count: wishlistCount } = useWishlist();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -40,7 +42,7 @@ export default function Header() {
         <div className="flex items-center gap-1.5 sm:gap-2">
           <ThemeToggle />
 
-                    <Link
+          <Link
             href="/wishlist"
             aria-label={`Wishlist${wishlistCount > 0 ? `, ${wishlistCount} item${wishlistCount !== 1 ? "s" : ""}` : ""}`}
             title="Wishlist"
