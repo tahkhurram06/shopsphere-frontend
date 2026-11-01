@@ -145,7 +145,9 @@ export default function CartPage() {
     );
   }
 
-  const total = cart.items.reduce(
+  const validItems = cart.items.filter((item) => item.product);
+
+  const total = validItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
@@ -168,7 +170,7 @@ export default function CartPage() {
           </div>
         )}
 
-        {cart.items.length === 0 ? (
+        {validItems.length === 0 ? (
           <div className="border border-gray-200 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
             <h3 className="text-base font-medium text-gray-900 mb-1.5">Your cart is empty</h3>
             <p className="text-sm text-gray-400">Browse the shop to add something.</p>
@@ -176,7 +178,7 @@ export default function CartPage() {
         ) : (
           <>
             <div className="flex flex-col gap-3">
-              {cart.items.map((item) => {
+              {validItems.map((item) => {
                 const subtotal = item.product.price * item.quantity;
                 const atMax = item.product.stock > 0 && item.quantity >= item.product.stock;
                 const busy = updatingId === item.product._id;
