@@ -2,6 +2,10 @@ import Header from '@/components/Header';
 import AddToCartButton from '@/components/AddToCartButton';
 import ProductGallery from '@/components/ProductGallery';
 import ReviewForm from '@/components/ReviewForm';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import WishlistButton from '@/components/WishlistButton';
+import RelatedProducts from '@/components/RelatedProducts';
+import QuantitySelector from '@/components/QuantitySelector';
 
 async function getProduct(id) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
@@ -48,6 +52,14 @@ export default async function ProductDetailPage({ params }) {
     <>
       <Header />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+        <Breadcrumbs
+          items={[
+            { label: 'Shop', href: '/' },
+            { label: product.category, href: `/?category=${encodeURIComponent(product.category)}` },
+            { label: product.name },
+          ]}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <ProductGallery
             images={product.images}
@@ -62,7 +74,10 @@ export default async function ProductDetailPage({ params }) {
           />
 
           <div className="flex flex-col">
-            <h1 className="text-2xl font-medium text-gray-900 mb-1">{product.name}</h1>
+            <div className="flex items-start justify-between gap-3 mb-1">
+              <h1 className="text-2xl font-medium text-gray-900">{product.name}</h1>
+              <WishlistButton productId={product._id} className="shrink-0" />
+            </div>
             <p className="text-sm text-gray-400 mb-3">{product.brand}</p>
             <p className="text-sm text-amber-600 mb-4 flex items-center gap-1">
               ★ {product.rating?.toFixed(1) || '0.0'}
@@ -85,7 +100,7 @@ export default async function ProductDetailPage({ params }) {
               {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
             </p>
 
-            <AddToCartButton productId={product._id} stock={product.stock} />
+            <QuantitySelector productId={product._id} stock={product.stock} />
           </div>
         </div>
 
@@ -110,6 +125,8 @@ export default async function ProductDetailPage({ params }) {
 
           <ReviewForm productId={product._id} />
         </section>
+
+        <RelatedProducts category={product.category} excludeId={product._id} />
       </main>
     </>
   );

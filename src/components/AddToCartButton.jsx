@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { useCart } from '@/context/CartContext';
 
-export default function AddToCartButton({ productId, stock = 0 }) {
+export default function AddToCartButton({ productId, stock = 0, quantity = 1 }) {
   const { token, user } = useAuth();
   const { toast } = useToast();
   const { refreshCart } = useCart();
@@ -28,11 +28,11 @@ export default function AddToCartButton({ productId, stock = 0 }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ productId, quantity: 1 }),
+        body: JSON.stringify({ productId, quantity }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to add to cart');
-      toast({ message: 'Added to cart.', type: 'success' });
+      toast({ message: `Added ${quantity} to cart.`, type: 'success' });
       refreshCart();
     } catch (err) {
       toast({ message: err.message, type: 'error' });

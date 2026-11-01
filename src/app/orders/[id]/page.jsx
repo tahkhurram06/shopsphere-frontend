@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { use } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 import Header from '@/components/Header';
 
 const statusStyles = {
@@ -24,12 +25,14 @@ const statusDot = {
 export default function OrderPage({ params }) {
   const { id } = use(params);
   const { token } = useAuth();
+  const { toast } = useToast();
   const searchParams = useSearchParams();
   const paidParam = searchParams.get('paid');
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
+  const [cancelling, setCancelling] = useState(false);
 
-  useEffect(() => {
+  const fetchOrder = () => {
     if (!token) return;
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -40,7 +43,29 @@ export default function OrderPage({ params }) {
         setOrder(data);
       })
       .catch((err) => setError(err.message));
+  };
+
+  useEffect(() => {
+    fetchOrder();
   }, [token, id]);
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/${id}/cancel`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to cancel order');
+      setOrder(data);
+      toast({ message: 'Order cancelled.', type: 'success' });
+    } catch (err) {
+      toast({ message: err.message, type: 'error' });
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   if (error) {
     return (
@@ -137,6 +162,19 @@ export default function OrderPage({ params }) {
             {order.isPaid ? 'Yes' : 'No'}
           </span>
         </div>
+
+        {order.status === 'pending' && (
+          <button
+            onClick={handleCancel}
+            disabled={cancelling}
+            className="mt-6 text-sm font-medium text-red-600 hover:text-red-700 border border-red-200 bg-red-50 hover:bg-red-100 rounded-xl px-5 py-2.5 transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {cancelling && (
+              <span className="w-3.5 h-3.5 border-2 border-red-300 border-t-red-600 rounded-full animate-spin" />
+            )}
+            {cancelling ? 'Cancelling...' : 'Cancel order'}
+          </button>
+        )}
       </main>
     </>
   );
