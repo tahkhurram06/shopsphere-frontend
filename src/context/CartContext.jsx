@@ -19,7 +19,9 @@ export function CartProvider({ children }) {
       });
       if (!res.ok) return;
       const data = await res.json();
-      const total = (data.items || []).reduce((sum, item) => sum + item.quantity, 0);
+      const total = (data.items || [])
+        .filter((item) => item.product)
+        .reduce((sum, item) => sum + item.quantity, 0);
       setCount(total);
     } catch {
       // silent — badge just won't update this cycle
