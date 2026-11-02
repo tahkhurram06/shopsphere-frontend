@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
+import { OrdersSkeleton } from '@/components/Skeletons';
 
 export default function OrdersPage() {
   const { user, token, loading } = useAuth();
@@ -33,10 +34,7 @@ export default function OrdersPage() {
     return (
       <>
         <Header />
-        <main className="max-w-4xl mx-auto px-4 py-16 flex flex-col items-center justify-center gap-3 text-gray-400 text-sm">
-          <span className="w-5 h-5 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
-          Loading...
-        </main>
+        <OrdersSkeleton />
       </>
     );
   }

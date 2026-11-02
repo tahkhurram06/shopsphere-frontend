@@ -4,13 +4,15 @@ import { useAuth } from './AuthContext';
 
 const WishlistContext = createContext();
 
+// Holds the set of wishlisted product IDs in one place, so any number of
+// heart buttons can read from it without each making its own request.
 export function WishlistProvider({ children }) {
   const { token, user } = useAuth();
-  const [count, setCount] = useState(0);
+  const [ids, setIds] = useState(() => new Set());
 
   const refreshWishlist = useCallback(async () => {
     if (!token) {
-      setCount(0);
+      setIds(new Set());
       return;
     }
     try {
@@ -19,19 +21,43 @@ export function WishlistProvider({ children }) {
       });
       if (!res.ok) return;
       const data = await res.json();
-      setCount(Array.isArray(data) ? data.length : 0);
+      setIds(new Set(Array.isArray(data) ? data.map((p) => p._id) : []));
     } catch {
-      // silent — badge just won't update this cycle
+      // silent — hearts just won't update this cycle
     }
   }, [token]);
 
   useEffect(() => {
     if (user) refreshWishlist();
-    else setCount(0);
+    else setIds(new Set());
   }, [user, refreshWishlist]);
 
+  const isInWishlist = useCallback((productId) => ids.has(productId), [ids]);
+
+  // Resolves to true if the product was added, false if removed. Throws on failure.
+  const toggleWishlist = useCallback(
+    async (productId) => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/wishlist/${productId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to update wishlist');
+      setIds((prev) => {
+        const next = new Set(prev);
+        if (data.added) next.add(productId);
+        else next.delete(productId);
+        return next;
+      });
+      return data.added;
+    },
+    [token]
+  );
+
   return (
-    <WishlistContext.Provider value={{ count, refreshWishlist }}>
+    <WishlistContext.Provider
+      value={{ count: ids.size, refreshWishlist, isInWishlist, toggleWishlist }}
+    >
       {children}
     </WishlistContext.Provider>
   );

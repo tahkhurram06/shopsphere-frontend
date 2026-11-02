@@ -1,31 +1,19 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { useWishlist } from '@/context/WishlistContext';
 
-export default function WishlistButton({ productId, className = '' }) {
-  const { user, token } = useAuth();
+// variant: 'default' (product page) | 'card' (small round heart over product cards)
+export default function WishlistButton({ productId, className = '', variant = 'default' }) {
+  const { user } = useAuth();
   const { toast } = useToast();
-  const { refreshWishlist } = useWishlist();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const router = useRouter();
-  const [inWishlist, setInWishlist] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!token) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/wishlist`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setInWishlist(data.some((p) => p._id === productId));
-        }
-      })
-      .catch(() => {});
-  }, [token, productId]);
+  const inWishlist = isInWishlist(productId);
 
   const handleToggle = async () => {
     if (!user) {
@@ -34,21 +22,27 @@ export default function WishlistButton({ productId, className = '' }) {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/wishlist/${productId}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to update wishlist');
-      setInWishlist(data.added);
-      refreshWishlist();
-      toast({ message: data.added ? 'Added to wishlist.' : 'Removed from wishlist.', type: 'success' });
+      const added = await toggleWishlist(productId);
+      toast({ message: added ? 'Added to wishlist.' : 'Removed from wishlist.', type: 'success' });
     } catch (err) {
       toast({ message: err.message, type: 'error' });
     } finally {
       setLoading(false);
     }
   };
+
+  const styles =
+    variant === 'card'
+      ? `w-9 h-9 rounded-full bg-white/90 backdrop-blur shadow-sm border ${
+          inWishlist
+            ? 'border-red-200 text-red-500'
+            : 'border-gray-200 text-gray-500 hover:text-red-500'
+        }`
+      : `w-11 h-11 rounded-xl border ${
+          inWishlist
+            ? 'bg-red-50 border-red-200 text-red-500 hover:bg-red-100'
+            : 'bg-white border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200'
+        }`;
 
   return (
     <button
@@ -57,11 +51,7 @@ export default function WishlistButton({ productId, className = '' }) {
       disabled={loading}
       aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
       title={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-      className={`w-11 h-11 flex items-center justify-center rounded-xl border transition-all duration-150 active:scale-90 disabled:opacity-50 ${
-        inWishlist
-          ? 'bg-red-50 border-red-200 text-red-500 hover:bg-red-100'
-          : 'bg-white border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200'
-      } ${className}`}
+      className={`flex items-center justify-center transition-all duration-150 active:scale-90 disabled:opacity-50 ${styles} ${className}`}
     >
       <svg
         className="w-[18px] h-[18px]"

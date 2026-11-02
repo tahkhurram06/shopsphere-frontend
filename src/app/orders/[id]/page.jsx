@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import Header from '@/components/Header';
+import { OrderDetailSkeleton } from '@/components/Skeletons';
 
 const statusStyles = {
   pending: 'bg-gray-100 text-gray-600',
@@ -84,10 +85,7 @@ export default function OrderPage({ params }) {
     return (
       <>
         <Header />
-        <main className="max-w-2xl mx-auto px-4 py-16 flex flex-col items-center justify-center gap-3 text-gray-400 text-sm">
-          <span className="w-5 h-5 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
-          Loading...
-        </main>
+        <OrderDetailSkeleton />
       </>
     );
   }

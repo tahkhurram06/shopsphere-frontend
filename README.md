@@ -34,3 +34,32 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+
+
+Output
+
+ok cart/page.jsx
+ok orders/page.jsx
+ok orders/[id]/page.jsx
+ok wishlist/page.jsx
+ok account/page.jsx
+./app/account/page.jsx
+./app/cart/page.jsx
+./app/loading.jsx
+./app/orders/[id]/page.jsx
+./app/orders/page.jsx
+./app/page.jsx
+./app/products/[id]/loading.jsx
+./app/wishlist/page.jsx
+./components/CategoryStrip.jsx
+./components/Footer.jsx
+./components/Hero.jsx
+./components/NewsletterForm.jsx
+./components/ProductCard.jsx
+./components/ProductSection.jsx
+./components/QuickAddButton.jsx
+./components/Skeletons.jsx
+./components/WishlistButton.jsx
+./context/WishlistContext.jsx

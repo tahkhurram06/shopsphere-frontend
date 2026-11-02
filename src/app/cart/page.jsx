@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { useCart } from "@/context/CartContext";
 import Header from "@/components/Header";
+import { CartSkeleton } from "@/components/Skeletons";
 import ProductImage from "@/components/ProductImage";
 
 const fieldClass =
@@ -137,10 +138,7 @@ export default function CartPage() {
     return (
       <>
         <Header />
-        <main className="max-w-4xl mx-auto px-4 py-16 flex flex-col items-center justify-center gap-3 text-gray-400 text-sm">
-          <span className="w-5 h-5 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
-          Loading...
-        </main>
+        <CartSkeleton />
       </>
     );
   }

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import Header from '@/components/Header';
+import { AccountSkeleton } from '@/components/Skeletons';
 
 const fieldClass =
   'border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all duration-150 hover:border-gray-300 focus:border-gray-900 focus:ring-4 focus:ring-gray-900/5';
@@ -32,10 +33,7 @@ export default function AccountPage() {
     return (
       <>
         <Header />
-        <main className="max-w-2xl mx-auto px-4 py-16 flex flex-col items-center justify-center gap-3 text-gray-400 text-sm">
-          <span className="w-5 h-5 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
-          Loading...
-        </main>
+        <AccountSkeleton />
       </>
     );
   }
