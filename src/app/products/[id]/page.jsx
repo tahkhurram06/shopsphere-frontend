@@ -1,15 +1,17 @@
-import Header from '@/components/Header';
-import AddToCartButton from '@/components/AddToCartButton';
-import ProductGallery from '@/components/ProductGallery';
-import ReviewForm from '@/components/ReviewForm';
-import Breadcrumbs from '@/components/Breadcrumbs';
-import WishlistButton from '@/components/WishlistButton';
-import RelatedProducts from '@/components/RelatedProducts';
-import QuantitySelector from '@/components/QuantitySelector';
+import Header from "@/components/layout/Header";
+import ProductGallery from "@/components/product/ProductGallery";
+import ReviewForm from "@/components/product/ReviewForm";
+import ReviewsSection from "@/components/product/Reviewssection";
+import Breadcrumbs from "@/components/common/Breadcrumbs";
+import WishlistButton from "@/components/product/WishlistButton";
+import RelatedProducts from "@/components/product/RelatedProducts";
+import RecentlyViewed from "@/components/product/Recentlyviewed";
+import BuyBox from "@/components/product/Buybox";
+import TrustRow from "@/components/product/Trustrow";
 
 async function getProduct(id) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
-    cache: 'no-store',
+    cache: "no-store",
   });
   if (!res.ok) return null;
   return res.json();
@@ -18,10 +20,51 @@ async function getProduct(id) {
 async function getReviews(id) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/products/${id}/reviews`,
-    { cache: 'no-store' }
+    { cache: "no-store" },
   );
   if (!res.ok) return [];
   return res.json();
+}
+
+// Shared SEO: shows product name, description, price, and image on social
+// shares / search results. generateMetadata runs server-side, same fetch
+// as the page itself (Next.js dedupes identical fetches in one render).
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+  const product = await getProduct(id);
+
+  if (!product) {
+    return {
+      title: "Product not found",
+      description: "This item may have been removed.",
+    };
+  }
+
+  const discounted = product.discountPercentage > 0;
+  const finalPrice = discounted
+    ? (product.price * (1 - product.discountPercentage / 100)).toFixed(2)
+    : product.price;
+  const image = product.images?.[0];
+  const description =
+    product.description?.slice(0, 160) ||
+    `${product.name} — $${finalPrice} at ShopSphere.`;
+
+  return {
+    title: product.name,
+    description,
+    openGraph: {
+      title: product.name,
+      description,
+      images: image ? [{ url: image, alt: product.name }] : [],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description,
+      images: image ? [image] : [],
+    },
+  };
 }
 
 export default async function ProductDetailPage({ params }) {
@@ -35,8 +78,12 @@ export default async function ProductDetailPage({ params }) {
         <Header />
         <main className="max-w-4xl mx-auto px-4 py-16">
           <div className="border border-gray-200 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
-            <h3 className="text-base font-medium text-gray-900 mb-1.5">Product not found</h3>
-            <p className="text-sm text-gray-400">This item may have been removed.</p>
+            <h3 className="text-base font-medium text-gray-900 mb-1.5">
+              Product not found
+            </h3>
+            <p className="text-sm text-gray-400">
+              This item may have been removed.
+            </p>
           </div>
         </main>
       </>
@@ -51,11 +98,15 @@ export default async function ProductDetailPage({ params }) {
   return (
     <>
       <Header />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+      {/* extra bottom padding on mobile so the sticky bar never covers content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-10 pb-44 md:pb-10">
         <Breadcrumbs
           items={[
-            { label: 'Shop', href: '/' },
-            { label: product.category, href: `/?category=${encodeURIComponent(product.category)}` },
+            { label: "Shop", href: "/" },
+            {
+              label: product.category,
+              href: `/?category=${encodeURIComponent(product.category)}`,
+            },
             { label: product.name },
           ]}
         />
@@ -75,58 +126,69 @@ export default async function ProductDetailPage({ params }) {
 
           <div className="flex flex-col">
             <div className="flex items-start justify-between gap-3 mb-1">
-              <h1 className="text-2xl font-medium text-gray-900">{product.name}</h1>
+              <h1 className="text-2xl font-medium text-gray-900">
+                {product.name}
+              </h1>
               <WishlistButton productId={product._id} className="shrink-0" />
             </div>
             <p className="text-sm text-gray-400 mb-3">{product.brand}</p>
             <p className="text-sm text-amber-600 mb-4 flex items-center gap-1">
-              ★ {product.rating?.toFixed(1) || '0.0'}
-              <span className="text-gray-400">({product.numReviews || 0} reviews)</span>
+              ★ {product.rating?.toFixed(1) || "0.0"}
+              <span className="text-gray-400">
+                ({product.numReviews || 0} reviews)
+              </span>
             </p>
-            <p className="text-sm text-gray-600 leading-relaxed mb-6">{product.description}</p>
+            <p className="text-sm text-gray-600 leading-relaxed mb-6">
+              {product.description}
+            </p>
 
             <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-2xl font-medium text-gray-900">${finalPrice}</span>
+              <span className="text-2xl font-medium text-gray-900">
+                ${finalPrice}
+              </span>
               {discounted && (
-                <span className="text-sm text-gray-400 line-through">${product.price}</span>
+                <span className="text-sm text-gray-400 line-through">
+                  ${product.price}
+                </span>
               )}
             </div>
 
             <p
               className={`text-xs mb-6 ${
-                product.stock > 0 ? 'text-gray-400' : 'text-red-500 font-medium'
+                product.stock > 0 ? "text-gray-400" : "text-red-500 font-medium"
               }`}
             >
-              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+              {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
             </p>
 
-            <QuantitySelector productId={product._id} stock={product.stock} />
+            <BuyBox
+              productId={product._id}
+              stock={product.stock}
+              name={product.name}
+              price={finalPrice}
+            />
+
+            <TrustRow />
           </div>
         </div>
 
         <section>
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Reviews</h2>
-
-          <div className="flex flex-col gap-3 mb-6">
-            {reviews.length === 0 ? (
-              <p className="text-sm text-gray-400">No reviews yet. Be the first to leave one.</p>
-            ) : (
-              reviews.map((review) => (
-                <div key={review._id} className="border border-gray-200 rounded-2xl p-4">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium text-gray-900">{review.user?.name}</span>
-                    <span className="text-amber-500 text-sm">★ {review.rating}</span>
-                  </div>
-                  <p className="text-sm text-gray-600">{review.comment}</p>
-                </div>
-              ))
-            )}
-          </div>
-
+          <ReviewsSection reviews={reviews} rating={product.rating} />
           <ReviewForm productId={product._id} />
         </section>
 
         <RelatedProducts category={product.category} excludeId={product._id} />
+
+        <RecentlyViewed
+          product={{
+            _id: product._id,
+            name: product.name,
+            brand: product.brand,
+            price: product.price,
+            discountPercentage: product.discountPercentage || 0,
+            image: product.images?.[0] || null,
+          }}
+        />
       </main>
     </>
   );

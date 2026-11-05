@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import NewsletterForm from '@/components/NewsletterForm';
+import NewsletterForm from '@/components/common/NewsletterForm';
 
 const linkClass = 'text-sm text-gray-500 hover:text-gray-900 transition-colors duration-150';
 
@@ -36,6 +36,8 @@ export default function Footer() {
           <ul className="flex flex-col gap-2">
             <li><Link href="/account" className={linkClass}>Your account</Link></li>
             <li><Link href="/orders" className={linkClass}>Your orders</Link></li>
+            <li><Link href="/terms" className={linkClass}>Terms of Service</Link></li>
+            <li><Link href="/privacy" className={linkClass}>Privacy Policy</Link></li>
           </ul>
         </div>
 

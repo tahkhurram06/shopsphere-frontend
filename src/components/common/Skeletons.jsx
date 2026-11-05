@@ -64,19 +64,22 @@ export function ProductDetailSkeleton() {
 
 export function CartSkeleton() {
   return (
-    <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
       <Skeleton className="h-8 w-40 mb-6" />
-      <div className="flex flex-col gap-3">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="border border-gray-200 rounded-2xl p-4 flex items-center gap-4">
-            <Skeleton className="w-20 h-20 shrink-0" />
-            <div className="flex-1 flex flex-col gap-2">
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-3 w-1/4" />
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-8 items-start">
+        <div className="flex flex-col gap-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="border border-gray-200 rounded-2xl p-4 flex gap-4">
+              <Skeleton className="w-24 h-24 shrink-0" />
+              <div className="flex-1 flex flex-col gap-2">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-1/4" />
+                <Skeleton className="h-9 w-24 mt-auto" />
+              </div>
             </div>
-            <Skeleton className="h-9 w-24 shrink-0" />
-          </div>
-        ))}
+          ))}
+        </div>
+        <Skeleton className="h-64 w-full rounded-2xl" />
       </div>
     </main>
   );

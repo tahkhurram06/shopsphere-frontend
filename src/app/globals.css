@@ -174,3 +174,17 @@ html.dark textarea::placeholder { color: #6b6b73; }
 html.dark [class*="shadow-gray-900"] {
   --tw-shadow-color: rgba(0, 0, 0, 0.5);
 }
+img, svg {
+  max-width: 100%;
+  height: auto;
+}
+/* Mobile drawer + backdrop need explicit dark styling —
+   bg-white alone is too close to the page background in dark mode */
+html.dark .shadow-xl.animate-fade-in-up {
+  background-color: #1c1c1f;
+  border-left: 1px solid #2a2a2e;
+}
+
+html.dark .bg-black\/40 {
+  background-color: rgba(0, 0, 0, 0.6);
+}

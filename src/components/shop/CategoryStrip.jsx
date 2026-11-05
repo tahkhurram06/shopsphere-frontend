@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import ProductImage from '@/components/ProductImage';
+import Link from "next/link";
+import ProductImage from "@/components/product/ProductImage";
 
 // categories: [{ name, image, count }]
 export default function CategoryStrip({ categories }) {
@@ -7,7 +7,9 @@ export default function CategoryStrip({ categories }) {
 
   return (
     <section className="mt-14">
-      <h2 className="text-lg md:text-xl font-medium text-gray-900 mb-5">Shop by category</h2>
+      <h2 className="text-lg md:text-xl font-medium text-gray-900 mb-5">
+        Shop by category
+      </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {categories.slice(0, 6).map((cat) => (
           <Link
@@ -26,7 +28,7 @@ export default function CategoryStrip({ categories }) {
               {cat.name}
             </p>
             <p className="text-xs text-gray-400">
-              {cat.count} product{cat.count !== 1 ? 's' : ''}
+              {cat.count} product{cat.count !== 1 ? "s" : ""}
             </p>
           </Link>
         ))}

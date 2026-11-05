@@ -1,31 +1,31 @@
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/context/ToastContext';
-import Header from '@/components/Header';
-import { AccountSkeleton } from '@/components/Skeletons';
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
+import Header from "@/components/layout/Header";
+import { AccountSkeleton } from "@/components/common/Skeletons";
 
 const fieldClass =
-  'border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all duration-150 hover:border-gray-300 focus:border-gray-900 focus:ring-4 focus:ring-gray-900/5';
-const labelClass = 'text-xs font-medium text-gray-500';
+  "border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm outline-none transition-all duration-150 hover:border-gray-300 focus:border-gray-900 focus:ring-4 focus:ring-gray-900/5";
+const labelClass = "text-xs font-medium text-gray-500";
 
 export default function AccountPage() {
   const { user, token, login, loading } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
-  const [name, setName] = useState(user?.name || '');
+  const [name, setName] = useState(user?.name || "");
   const [savingName, setSavingName] = useState(false);
 
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
+  const [passwordError, setPasswordError] = useState("");
 
   if (!loading && !user) {
-    router.push('/login');
+    router.push("/login");
     return null;
   }
 
@@ -43,20 +43,20 @@ export default function AccountPage() {
     setSavingName(true);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ name }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to update profile');
+      if (!res.ok) throw new Error(data.message || "Failed to update profile");
 
       login({ ...data, token });
-      toast({ message: 'Profile updated.', type: 'success' });
+      toast({ message: "Profile updated.", type: "success" });
     } catch (err) {
-      toast({ message: err.message, type: 'error' });
+      toast({ message: err.message, type: "error" });
     } finally {
       setSavingName(false);
     }
@@ -64,37 +64,37 @@ export default function AccountPage() {
 
   const handlePasswordSave = async (e) => {
     e.preventDefault();
-    setPasswordError('');
+    setPasswordError("");
 
     if (newPassword !== confirmPassword) {
       setPasswordError("New passwords don't match");
       return;
     }
     if (newPassword.length < 6) {
-      setPasswordError('New password must be at least 6 characters');
+      setPasswordError("New password must be at least 6 characters");
       return;
     }
 
     setSavingPassword(true);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to update password');
+      if (!res.ok) throw new Error(data.message || "Failed to update password");
 
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      toast({ message: 'Password updated.', type: 'success' });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      toast({ message: "Password updated.", type: "success" });
     } catch (err) {
       setPasswordError(err.message);
-      toast({ message: err.message, type: 'error' });
+      toast({ message: err.message, type: "error" });
     } finally {
       setSavingPassword(false);
     }
@@ -125,7 +125,7 @@ export default function AccountPage() {
           <div className="flex flex-col gap-1.5">
             <label className={labelClass}>Email</label>
             <input
-              value={user?.email || ''}
+              value={user?.email || ""}
               disabled
               className={`${fieldClass} bg-gray-50 text-gray-400 cursor-not-allowed`}
             />
@@ -139,7 +139,7 @@ export default function AccountPage() {
             {savingName && (
               <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             )}
-            {savingName ? 'Saving...' : 'Save profile'}
+            {savingName ? "Saving..." : "Save profile"}
           </button>
         </form>
 
@@ -196,7 +196,7 @@ export default function AccountPage() {
             {savingPassword && (
               <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             )}
-            {savingPassword ? 'Saving...' : 'Update password'}
+            {savingPassword ? "Saving..." : "Update password"}
           </button>
         </form>
       </main>

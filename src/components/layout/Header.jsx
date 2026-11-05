@@ -1,16 +1,19 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import Link from "next/link";
-import ThemeToggle from "@/components/ThemeToggle";
+import ThemeToggle from "@/components/layout/ThemeToggle";
+import SearchBar from "@/components/shop/SearchBar";
 
 export default function Header() {
   const { user, logout, loading } = useAuth();
   const { count } = useCart();
   const { count: wishlistCount } = useWishlist();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -22,7 +25,27 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (loading) return null;
+  // Close the mobile menu on route change isn't needed here since Link
+  // navigation unmounts/remounts naturally, but close it on Escape.
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e) => e.key === "Escape" && setMobileMenuOpen(false);
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [mobileMenuOpen]);
+
+  // Placeholder of the same height as the real header, so the page doesn't
+  // jump once auth resolves.
+  if (loading) {
+    return (
+      <div className="sticky top-0 z-20 h-16 bg-white/90 backdrop-blur border-b border-gray-200" />
+    );
+  }
 
   return (
     <header className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-gray-200">
@@ -39,14 +62,19 @@ export default function Header() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="hidden sm:block flex-1 max-w-md">
+          <SearchBar variant="desktop" />
+        </div>
+
+        <div className="flex items-center gap-1 sm:gap-2">
+          <SearchBar variant="mobile" />
           <ThemeToggle />
 
           <Link
             href="/wishlist"
             aria-label={`Wishlist${wishlistCount > 0 ? `, ${wishlistCount} item${wishlistCount !== 1 ? "s" : ""}` : ""}`}
             title="Wishlist"
-            className="relative w-10 h-10 flex items-center justify-center rounded-xl text-gray-500 bg-white border border-gray-200 shadow-sm shadow-gray-900/5 hover:shadow-md hover:shadow-gray-900/10 hover:text-gray-900 hover:-translate-y-0.5 active:scale-90 active:translate-y-0 transition-all duration-150"
+            className="hidden sm:flex relative w-9 h-9 sm:w-10 sm:h-10 items-center justify-center rounded-xl text-gray-500 bg-white border border-gray-200 shadow-sm shadow-gray-900/5 hover:shadow-md hover:shadow-gray-900/10 hover:text-gray-900 hover:-translate-y-0.5 active:scale-90 active:translate-y-0 transition-all duration-150"
           >
             <svg
               className="w-[18px] h-[18px]"
@@ -74,7 +102,7 @@ export default function Header() {
             href="/cart"
             aria-label={`Cart${count > 0 ? `, ${count} item${count !== 1 ? "s" : ""}` : ""}`}
             title="Cart"
-            className="relative w-10 h-10 flex items-center justify-center rounded-xl text-gray-500 bg-white border border-gray-200 shadow-sm shadow-gray-900/5 hover:shadow-md hover:shadow-gray-900/10 hover:text-gray-900 hover:-translate-y-0.5 active:scale-90 active:translate-y-0 transition-all duration-150"
+            className="hidden sm:flex relative w-9 h-9 sm:w-10 sm:h-10 items-center justify-center rounded-xl text-gray-500 bg-white border border-gray-200 shadow-sm shadow-gray-900/5 hover:shadow-md hover:shadow-gray-900/10 hover:text-gray-900 hover:-translate-y-0.5 active:scale-90 active:translate-y-0 transition-all duration-150"
           >
             <svg
               className="w-[18px] h-[18px]"
@@ -105,7 +133,7 @@ export default function Header() {
                 href="/orders"
                 aria-label="Orders"
                 title="Orders"
-                className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-500 bg-white border border-gray-200 shadow-sm shadow-gray-900/5 hover:shadow-md hover:shadow-gray-900/10 hover:text-gray-900 hover:-translate-y-0.5 active:scale-90 active:translate-y-0 transition-all duration-150"
+                className="hidden sm:flex w-10 h-10 items-center justify-center rounded-xl text-gray-500 bg-white border border-gray-200 shadow-sm shadow-gray-900/5 hover:shadow-md hover:shadow-gray-900/10 hover:text-gray-900 hover:-translate-y-0.5 active:scale-90 active:translate-y-0 transition-all duration-150"
               >
                 <svg
                   className="w-[18px] h-[18px]"
@@ -122,9 +150,11 @@ export default function Header() {
                 </svg>
               </Link>
 
-              <div ref={menuRef} className="relative ml-1">
+              <div ref={menuRef} className="relative ml-1 hidden sm:block">
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
+                  aria-haspopup="true"
+                  aria-expanded={menuOpen}
                   className="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs font-medium hover:opacity-90 active:scale-90 transition-all duration-150"
                 >
                   {user?.name?.slice(0, 2).toUpperCase() || "U"}
@@ -227,7 +257,7 @@ export default function Header() {
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-2 ml-1">
+            <div className="hidden sm:flex items-center gap-2 ml-1">
               <Link
                 href="/login"
                 className="text-xs font-medium text-gray-600 bg-gray-100 rounded-lg px-3.5 py-2 hover:bg-gray-900 hover:text-white active:scale-95 transition-all duration-150"
@@ -242,8 +272,141 @@ export default function Header() {
               </Link>
             </div>
           )}
+
+          {/* Mobile menu trigger — "everything else": Orders/Account/Terms/Privacy/Login live here.
+              Wishlist/Cart/Home/Account are already covered by MobileBottomNav, so they're
+              intentionally NOT duplicated in this drawer. */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open menu"
+            aria-haspopup="true"
+            aria-expanded={mobileMenuOpen}
+            title="Menu"
+            className="sm:hidden w-10 h-10 flex items-center justify-center rounded-xl text-gray-500 bg-white border border-gray-200 shadow-sm shadow-gray-900/5 hover:text-gray-900 active:scale-90 transition-all duration-150"
+          >
+            <svg
+              className="w-[18px] h-[18px]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.8}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"
+              />
+            </svg>
+          </button>
         </div>
       </div>
+
+      {/* Mobile menu panel */}
+           {/* Mobile menu panel — portaled to body so it isn't trapped by the
+          header's backdrop-blur, which would otherwise make this fixed
+          overlay position relative to the header instead of the viewport. */}
+      {mobileMenuOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div className="sm:hidden fixed inset-0 z-50">
+            <div
+              className="absolute inset-0 bg-black/40 animate-fade-in"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+            <div className="absolute right-0 top-0 bottom-0 w-72 max-w-[85vw] bg-white shadow-xl animate-fade-in-up flex flex-col">
+              <div className="h-16 px-4 flex items-center justify-between border-b border-gray-200 shrink-0">
+                <span className="font-medium text-gray-900">Menu</span>
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Close menu"
+                  className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 active:scale-90 transition-all duration-150"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto py-2">
+                {user && (
+                  <div className="px-4 py-3 border-b border-gray-100 mb-1">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {user?.name}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+                )}
+
+                <Link
+                  href="/orders"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-100"
+                >
+                  Your orders
+                </Link>
+                <Link
+                  href="/account"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-100"
+                >
+                  Account
+                </Link>
+
+                <div className="border-t border-gray-100 my-2" />
+
+                <Link
+                  href="/terms"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-500 hover:bg-gray-50 transition-colors duration-100"
+                >
+                  Terms of Service
+                </Link>
+                <Link
+                  href="/privacy"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm text-gray-500 hover:bg-gray-50 transition-colors duration-100"
+                >
+                  Privacy Policy
+                </Link>
+              </div>
+
+              <div className="border-t border-gray-200 p-4 shrink-0">
+                {user ? (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      logout();
+                    }}
+                    className="w-full text-left text-sm font-medium text-red-600 px-1 py-2"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-center text-sm font-medium text-gray-900 bg-gray-100 rounded-xl px-4 py-2.5"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      href="/register"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-center text-sm font-medium text-white bg-gray-900 rounded-xl px-4 py-2.5"
+                    >
+                      Register
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </header>
   );
 }

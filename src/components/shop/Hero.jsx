@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import ProductImage from '@/components/ProductImage';
+import Link from "next/link";
+import ProductImage from "@/components/product/ProductImage";
 
 export default function Hero({ featured, hasDeals }) {
   const discounted = featured?.discountPercentage > 0;
@@ -53,13 +53,19 @@ export default function Hero({ featured, hasDeals }) {
           )}
           <div className="absolute left-3 right-3 bottom-3 bg-white/90 backdrop-blur rounded-xl px-4 py-3 flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{featured.name}</p>
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {featured.name}
+              </p>
               <p className="text-xs text-gray-400 truncate">{featured.brand}</p>
             </div>
             <span className="flex items-baseline gap-1.5 shrink-0">
-              <span className="text-sm font-medium text-gray-900">${price}</span>
+              <span className="text-sm font-medium text-gray-900">
+                ${price}
+              </span>
               {discounted && (
-                <span className="text-xs text-gray-400 line-through">${featured.price}</span>
+                <span className="text-xs text-gray-400 line-through">
+                  ${featured.price}
+                </span>
               )}
             </span>
           </div>

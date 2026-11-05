@@ -1,11 +1,14 @@
-import Link from 'next/link';
-import ProductImage from '@/components/ProductImage';
+import Link from "next/link";
+import ProductImage from "@/components/product/ProductImage";
 
 async function getRelated(category, excludeId) {
   const params = new URLSearchParams({ category });
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products?${params.toString()}`, {
-    cache: 'no-store',
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/products?${params.toString()}`,
+    {
+      cache: "no-store",
+    },
+  );
   if (!res.ok) return [];
   const all = await res.json();
   return all.filter((p) => p._id !== excludeId).slice(0, 4);
@@ -17,7 +20,9 @@ export default async function RelatedProducts({ category, excludeId }) {
 
   return (
     <section className="mt-12">
-      <h2 className="text-lg font-medium text-gray-900 mb-4">You might also like</h2>
+      <h2 className="text-lg font-medium text-gray-900 mb-4">
+        You might also like
+      </h2>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
         {related.map((product) => (
           <Link
@@ -33,7 +38,9 @@ export default async function RelatedProducts({ category, excludeId }) {
               />
             </div>
             <div className="p-3">
-              <h3 className="text-sm font-medium text-gray-900 truncate">{product.name}</h3>
+              <h3 className="text-sm font-medium text-gray-900 truncate">
+                {product.name}
+              </h3>
               <p className="text-sm text-gray-900 mt-0.5">${product.price}</p>
             </div>
           </Link>

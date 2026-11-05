@@ -1,40 +1,78 @@
-import Header from '@/components/Header';
-import Hero from '@/components/Hero';
-import CategoryStrip from '@/components/CategoryStrip';
-import ProductSection from '@/components/ProductSection';
-import ProductCard from '@/components/ProductCard';
-import ShopFilters from '@/components/ShopFilters';
-import Footer from '@/components/Footer';
+import Header from "@/components/layout/Header";
+import Hero from "@/components/shop/Hero";
+import CategoryStrip from "@/components/shop/CategoryStrip";
+import ProductSection from "@/components/product/ProductSection";
+import ProductCard from "@/components/product/ProductCard";
+import ShopFilters from "@/components/shop/ShopFilters";
+import Pagination from "@/components/shop/Pagination";
+import Footer from "@/components/layout/Footer";
+
+const PAGE_SIZE = 12;
+const BROWSE_KEYS = [
+  "keyword",
+  "category",
+  "sort",
+  "minPrice",
+  "maxPrice",
+  "rating",
+  "inStock",
+  "page",
+];
 
 async function getProducts(searchParams) {
   const params = new URLSearchParams();
-  if (searchParams.keyword) params.set('keyword', searchParams.keyword);
-  if (searchParams.category) params.set('category', searchParams.category);
+  if (searchParams.keyword) params.set("keyword", searchParams.keyword);
+  if (searchParams.category) params.set("category", searchParams.category);
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products?${params.toString()}`, {
-    cache: 'no-store',
-  });
-  if (!res.ok) throw new Error('Failed to fetch products');
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/products?${params.toString()}`,
+    {
+      cache: "no-store",
+    },
+  );
+  if (!res.ok) throw new Error("Failed to fetch products");
   return res.json();
 }
 
 // Unfiltered fetch so the category dropdown always lists every category.
 async function getAllProducts() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
-    cache: 'no-store',
+    cache: "no-store",
   });
   if (!res.ok) return [];
   return res.json();
 }
 
+// Price a customer actually sees (after discount)
+function finalPrice(p) {
+  return p.discountPercentage > 0
+    ? p.price * (1 - p.discountPercentage / 100)
+    : p.price;
+}
+
+// The backend only filters by keyword + category, so the rest is applied here.
+function applyFilters(products, params) {
+  const min = parseFloat(params.minPrice);
+  const max = parseFloat(params.maxPrice);
+  const rating = parseFloat(params.rating);
+  return products.filter((p) => {
+    const price = finalPrice(p);
+    if (!isNaN(min) && price < min) return false;
+    if (!isNaN(max) && price > max) return false;
+    if (!isNaN(rating) && (p.rating || 0) < rating) return false;
+    if (params.inStock === "1" && !(p.stock > 0)) return false;
+    return true;
+  });
+}
+
 function sortProducts(products, sort) {
   const sorted = [...products];
   switch (sort) {
-    case 'price-asc':
-      return sorted.sort((a, b) => a.price - b.price);
-    case 'price-desc':
-      return sorted.sort((a, b) => b.price - a.price);
-    case 'rating-desc':
+    case "price-asc":
+      return sorted.sort((a, b) => finalPrice(a) - finalPrice(b));
+    case "price-desc":
+      return sorted.sort((a, b) => finalPrice(b) - finalPrice(a));
+    case "rating-desc":
       return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     default:
       return sorted; // backend already returns newest-first
@@ -45,7 +83,11 @@ function buildCategoryCards(all) {
   const map = new Map();
   for (const p of all) {
     if (!p.category) continue;
-    const entry = map.get(p.category) || { name: p.category, image: null, count: 0 };
+    const entry = map.get(p.category) || {
+      name: p.category,
+      image: null,
+      count: 0,
+    };
     entry.count += 1;
     if (!entry.image && p.images?.[0]) entry.image = p.images[0];
     map.set(p.category, entry);
@@ -55,17 +97,20 @@ function buildCategoryCards(all) {
 
 export default async function Home({ searchParams }) {
   const params = await searchParams;
-  // Any active filter/sort = plain browsing view (no hero or curated sections).
-  const browsing = Boolean(params.keyword || params.category || params.sort);
+  // Any filter, sort or page = plain browsing view (no hero or curated sections).
+  const browsing = BROWSE_KEYS.some((k) => params[k]);
 
   let products = [];
   let all = [];
-  let error = '';
+  let error = "";
 
   try {
     if (browsing) {
-      [products, all] = await Promise.all([getProducts(params), getAllProducts()]);
-      products = sortProducts(products, params.sort);
+      [products, all] = await Promise.all([
+        getProducts(params),
+        getAllProducts(),
+      ]);
+      products = sortProducts(applyFilters(products, params), params.sort);
     } else {
       all = await getAllProducts();
       products = all;
@@ -77,7 +122,23 @@ export default async function Home({ searchParams }) {
   const categoryCards = buildCategoryCards(all);
   const categories = categoryCards.map((c) => c.name);
 
-  // Curated sections (only used on the default view)
+  // Pagination
+  const total = products.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const page = Math.min(
+    Math.max(parseInt(params.page, 10) || 1, 1),
+    totalPages,
+  );
+  const start = (page - 1) * PAGE_SIZE;
+  const pageItems = products.slice(start, start + PAGE_SIZE);
+
+  const countText = error
+    ? " "
+    : total <= PAGE_SIZE
+      ? `${total} product${total !== 1 ? "s" : ""}`
+      : `Showing ${start + 1}–${start + pageItems.length} of ${total} products`;
+
+  // Curated sections (default view only)
   const newArrivals = all.slice(0, 4);
   const topRated = [...all]
     .filter((p) => (p.rating || 0) > 0)
@@ -97,7 +158,11 @@ export default async function Home({ searchParams }) {
           <>
             <Hero featured={featured} hasDeals={onSale.length > 0} />
             <CategoryStrip categories={categoryCards} />
-            <ProductSection id="new-arrivals" title="New arrivals" products={newArrivals} />
+            <ProductSection
+              id="new-arrivals"
+              title="New arrivals"
+              products={newArrivals}
+            />
             <ProductSection
               id="top-rated"
               title="Top rated"
@@ -108,13 +173,14 @@ export default async function Home({ searchParams }) {
           </>
         )}
 
-        <section id="products" className={`scroll-mt-24 ${browsing ? '' : 'mt-16'}`}>
+        <section
+          id="products"
+          className={`scroll-mt-24 ${browsing ? "" : "mt-16"}`}
+        >
           <h2 className="text-2xl md:text-3xl font-medium text-gray-900 mb-1">
-            {browsing ? 'Shop' : 'All products'}
+            {browsing ? "Shop" : "All products"}
           </h2>
-          <p className="text-sm text-gray-400 mb-6">
-            {error ? ' ' : `${products.length} product${products.length !== 1 ? 's' : ''}`}
-          </p>
+          <p className="text-sm text-gray-400 mb-6">{countText}</p>
 
           <ShopFilters categories={categories} />
 
@@ -124,18 +190,24 @@ export default async function Home({ searchParams }) {
             </div>
           )}
 
-          {!error && products.length === 0 && (
+          {!error && total === 0 && (
             <div className="border border-gray-200 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
-              <h3 className="text-base font-medium text-gray-900 mb-1.5">No products found</h3>
-              <p className="text-sm text-gray-400">Try a different search or filter.</p>
+              <h3 className="text-base font-medium text-gray-900 mb-1.5">
+                No products found
+              </h3>
+              <p className="text-sm text-gray-400">
+                Try removing a filter or searching for something else.
+              </p>
             </div>
           )}
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-            {products.map((product, i) => (
+            {pageItems.map((product, i) => (
               <ProductCard key={product._id} product={product} index={i} />
             ))}
           </div>
+
+          <Pagination page={page} totalPages={totalPages} params={params} />
         </section>
       </main>
       <Footer />

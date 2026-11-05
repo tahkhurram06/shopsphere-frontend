@@ -4,10 +4,22 @@ import { ToastProvider } from '@/context/ToastContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
+import CookieConsent from '@/components/layout/CookieConsent';
 
 export const metadata = {
-  title: 'ShopSphere',
-  description: 'ShopSphere e-commerce app',
+  title: {
+    default: 'ShopSphere',
+    template: '%s | ShopSphere',
+  },
+  description: 'Shop new arrivals, top-rated picks, and current deals — all in one place.',
+  openGraph: {
+    siteName: 'ShopSphere',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 };
 
 const themeInitScript = `
@@ -32,12 +44,16 @@ export default function RootLayout({ children }) {
         />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="antialiased" suppressHydrationWarning>
+      <body className="antialiased pb-[60px] sm:pb-0" suppressHydrationWarning>
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>
               <CartProvider>
-                <WishlistProvider>{children}</WishlistProvider>
+                <WishlistProvider>
+                  {children}
+                  <MobileBottomNav />
+                  <CookieConsent />
+                </WishlistProvider>
               </CartProvider>
             </ToastProvider>
           </AuthProvider>

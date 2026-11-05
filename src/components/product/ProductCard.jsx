@@ -1,7 +1,7 @@
-import Link from 'next/link';
-import ProductImage from '@/components/ProductImage';
-import WishlistButton from '@/components/WishlistButton';
-import QuickAddButton from '@/components/Quickaddbutton';
+import Link from "next/link";
+import ProductImage from "@/components/product/ProductImage";
+import WishlistButton from "@/components/product/WishlistButton";
+import QuickAddButton from "@/components/product/Quickaddbutton";
 
 // Pass `index` only where you want the staggered fade-in (e.g. the main grid).
 export default function ProductCard({ product, index }) {
@@ -14,9 +14,13 @@ export default function ProductCard({ product, index }) {
 
   return (
     <div
-      style={index !== undefined ? { animationDelay: `${Math.min(index, 8) * 40}ms` } : undefined}
+      style={
+        index !== undefined
+          ? { animationDelay: `${Math.min(index, 8) * 40}ms` }
+          : undefined
+      }
       className={`${
-        index !== undefined ? 'animate-fade-in-up ' : ''
+        index !== undefined ? "animate-fade-in-up " : ""
       }group border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm shadow-gray-900/[0.02] transition-all duration-300 hover:shadow-md hover:shadow-gray-900/[0.06] hover:-translate-y-0.5`}
     >
       <div className="relative w-full h-48 overflow-hidden bg-gray-100">
@@ -61,11 +65,13 @@ export default function ProductCard({ product, index }) {
           <span className="flex items-baseline gap-1.5">
             <span className="font-medium text-gray-900">${finalPrice}</span>
             {discounted && (
-              <span className="text-xs text-gray-400 line-through">${product.price}</span>
+              <span className="text-xs text-gray-400 line-through">
+                ${product.price}
+              </span>
             )}
           </span>
           <span className="text-xs text-amber-600 flex items-center gap-0.5">
-            ★ {product.rating?.toFixed(1) || '0.0'}
+            ★ {product.rating?.toFixed(1) || "0.0"}
             <span className="text-gray-400">({product.numReviews || 0})</span>
           </span>
         </div>

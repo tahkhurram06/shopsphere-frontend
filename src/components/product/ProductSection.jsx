@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import ProductCard from '@/components/ProductCard';
+import Link from "next/link";
+import ProductCard from "@/components/product/ProductCard";
 
 export default function ProductSection({ id, title, products, href }) {
   if (!products || products.length === 0) return null;
@@ -7,7 +7,9 @@ export default function ProductSection({ id, title, products, href }) {
   return (
     <section id={id} className="mt-14 scroll-mt-24">
       <div className="flex items-end justify-between mb-5">
-        <h2 className="text-lg md:text-xl font-medium text-gray-900">{title}</h2>
+        <h2 className="text-lg md:text-xl font-medium text-gray-900">
+          {title}
+        </h2>
         {href && (
           <Link
             href={href}
