@@ -58,10 +58,10 @@ export default function ProductCard({ product, index }) {
         )}
       </div>
 
-      <Link href={href} className="block p-4">
+           <Link href={href} className="block p-4">
         <h3 className="font-medium text-gray-900 truncate">{product.name}</h3>
         <p className="text-xs text-gray-400 mb-2">{product.brand}</p>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1">
           <span className="flex items-baseline gap-1.5">
             <span className="font-medium text-gray-900">${finalPrice}</span>
             {discounted && (
@@ -75,7 +75,7 @@ export default function ProductCard({ product, index }) {
             <span className="text-gray-400">({product.numReviews || 0})</span>
           </span>
         </div>
-      </Link>
+      </Link> 
     </div>
   );
 }
